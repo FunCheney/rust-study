@@ -4,12 +4,12 @@ use clap::{Parser};
 use csv::{Reader, StringRecord};
 use serde::{Serialize, Deserialize};
 
+/// Parser 可以和 命令行的参数联系起来
 #[derive(Debug, Parser)]
 #[command(name= "cli", version, author, about, long_about = None) ]
 struct Opts {
     #[command(subcommand)]
     cmd: Subcommand,
-
 }
 
 #[derive(Debug, Parser)]
@@ -23,7 +23,7 @@ pub struct CsvOpts {
     #[arg(short, long, value_parser = verify_file)]
     pub input: String,
 
-    #[arg(short, long)] // "output.json".into()
+    #[arg(short, long, default_value = "output.json")] // "output.json".into()
     pub output: Option<String>,
 
     #[arg(short, long, default_value_t = ',')]
@@ -53,6 +53,7 @@ fn main() {
     println!("Hello, world!");
 }
 
+/// 校验方法
 fn verify_file(path: &str) -> Result<String, String> {
     if Path::new(path).exists() {
         Ok(path.into())
