@@ -1,6 +1,5 @@
 use std::path::Path;
 use clap::Parser;
-use serde::{Deserialize, Serialize};
 
 /// Parser 可以和 命令行的参数联系起来
 #[derive(Debug, Parser)]
@@ -29,13 +28,6 @@ pub struct CsvOpts {
 
     #[arg(long, default_value_t = true)]
     pub header: bool,
-}
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Record {
-    #[serde(rename = "Name")]
-    pub name: String,
-    #[serde(rename = "Age")]
-    pub age: u8,
 }
 
 
