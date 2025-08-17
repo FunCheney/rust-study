@@ -15,6 +15,13 @@ pub enum Subcommand {
     Csv(CsvOpts),
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum OutputFormat {
+    Json,
+    Yaml,
+    Toml,
+}
+
 #[derive(Debug, Parser)]
 pub struct CsvOpts {
     #[arg(short, long, value_parser = verify_file)]
@@ -22,6 +29,9 @@ pub struct CsvOpts {
 
     #[arg(short, long, default_value = "output.json")] // "output.json".into()
     pub output: String,
+
+    #[arg(short, long, value_parser = parse_format, default_value = "json")]
+    pub format: OutputFormat,
 
     #[arg(short, long, default_value_t = ',')]
     pub delimiter: char,
@@ -37,5 +47,14 @@ fn verify_file(path: &str) -> Result<String, String> {
         Ok(path.into())
     }else {
         Err(format!("{} does not exist", path))
+    }
+}
+
+fn parse_format(format: &str) -> Result<OutputFormat, String> {
+    match format.to_lowercase().as_str() {
+        "json" => Ok(OutputFormat::Json),
+        "yaml" => Ok(OutputFormat::Yaml),
+        "toml" => Ok(OutputFormat::Toml),
+        _ => Err(format!("unknown output format {}", format)),
     }
 }
