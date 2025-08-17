@@ -1,63 +1,31 @@
-use std::path::Path;
+use std::fs::File;
 // cli csv -i input.csv -o output json —header -d ','
-use clap::{Parser};
-use csv::{Reader, StringRecord};
-use serde::{Serialize, Deserialize};
+use clap::Parser;
+use cli::{Opts, Record, Subcommand};
+use csv::Reader;
+use serde::Deserialize;
 
-/// Parser 可以和 命令行的参数联系起来
-#[derive(Debug, Parser)]
-#[command(name= "cli", version, author, about, long_about = None) ]
-struct Opts {
-    #[command(subcommand)]
-    cmd: Subcommand,
-}
-
-#[derive(Debug, Parser)]
-enum Subcommand {
-    #[command(name="csv", about = "show CSV, or Convert CSV file to other formats")]
-    Csv(CsvOpts),
-}
-
-#[derive(Debug, Parser)]
-pub struct CsvOpts {
-    #[arg(short, long, value_parser = verify_file)]
-    pub input: String,
-
-    #[arg(short, long, default_value = "output.json")] // "output.json".into()
-    pub output: Option<String>,
-
-    #[arg(short, long, default_value_t = ',')]
-    pub delimiter: char,
-
-    #[arg(long, default_value_t = true)]
-    pub header: bool,
-}
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Record {
-    pub name: String,
-    pub age: u8,
-}
-
-fn main() {
+fn main() -> anyhow::Result<()>  {
     let opts = Opts::parse();
     println!("{:?}", opts);
     match opts.cmd {
         Subcommand::Csv(opts) => {
-            let mut reader = Reader::from_path(opts.input).unwrap();
-            let records = reader.records()
-            .map(|r| r.unwrap())
-                .collect::<Vec<StringRecord>>();
-            println!("{:?}", records);
+            let mut reader = Reader::from_path(opts.input)?;
+            let mut ret = Vec::with_capacity(128);
+            // let records = reader.records()
+            // .map(|r| r.unwrap())
+            //     .collect::<Vec<StringRecord>>();
+            for result in reader.deserialize() {
+                let record: Record = result?;
+                ret.push(record);
+            }
+            // 创建输出文件并将数据序列化为 JSON 写入
+            let file = File::create(opts.output)?;
+            // 修复：直接使用原始数据 ret 而不是已序列化的 json 字符串
+            serde_json::to_writer_pretty(file, &ret)?;
         }
     }
     println!("Hello, world!");
-}
 
-/// 校验方法
-fn verify_file(path: &str) -> Result<String, String> {
-    if Path::new(path).exists() {
-        Ok(path.into())
-    }else {
-        Err(format!("{} does not exist", path))
-    }
+    Ok(())
 }

@@ -1,4 +1,5 @@
 
+### csv 数据转化为 rust 的数据结构
 添加依赖
 ```6502 assembly
 cargo add clap --features derive
@@ -19,3 +20,8 @@ cargo run -- csv -i data/test.csv
 ```6502 assembly
 cargo add csv 
 ```
+
+```6502 assembly
+cargo add serde --features derive 
+```
+
