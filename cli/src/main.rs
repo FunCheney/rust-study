@@ -7,7 +7,12 @@ fn main() -> anyhow::Result<()>  {
     println!("{:?}", opts);
     match opts.cmd {
         Subcommand::Csv(opts) => {
-            process_csv(&opts.input, &opts.output)?
+            let output = if let Some(output) = opts.output {
+                output.clone()
+            }else {
+                "output.json".to_string()
+            };
+            process_csv(&opts.input, output, opts.format)?
         }
     }
     println!("Hello, world!");

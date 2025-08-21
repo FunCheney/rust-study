@@ -1,4 +1,5 @@
 use std::path::Path;
+use std::str::FromStr;
 use clap::Parser;
 
 /// Parser 可以和 命令行的参数联系起来
@@ -27,8 +28,8 @@ pub struct CsvOpts {
     #[arg(short, long, value_parser = verify_file)]
     pub input: String,
 
-    #[arg(short, long, default_value = "output.json")] // "output.json".into()
-    pub output: String,
+    #[arg(short, long)] // "output.json".into()
+    pub output: Option<String>,
 
     #[arg(short, long, value_parser = parse_format, default_value = "json")]
     pub format: OutputFormat,
@@ -50,11 +51,31 @@ fn verify_file(path: &str) -> Result<String, String> {
     }
 }
 
-fn parse_format(format: &str) -> Result<OutputFormat, String> {
-    match format.to_lowercase().as_str() {
-        "json" => Ok(OutputFormat::Json),
-        "yaml" => Ok(OutputFormat::Yaml),
-        "toml" => Ok(OutputFormat::Toml),
-        _ => Err(format!("unknown output format {}", format)),
+fn parse_format(format: &str) -> Result<OutputFormat, anyhow::Error> {
+    // 把 string 解析成其他的类型，前提是这个类型实现了 FromStr
+    format.parse::<OutputFormat>()
+}
+
+
+impl From<OutputFormat> for &'static str {
+    fn from(value: OutputFormat) -> Self {
+        match value {
+            OutputFormat::Json => "json",
+            OutputFormat::Yaml => "yaml",
+            OutputFormat::Toml => "toml", 
+        }
+    }
+}
+
+
+impl FromStr for OutputFormat {
+    type Err = anyhow::Error;
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        match value.to_lowercase().as_str() {
+            "json" => Ok(OutputFormat::Json),
+            "yaml" => Ok(OutputFormat::Yaml),
+            "toml" => Ok(OutputFormat::Toml),
+            _ => anyhow::bail!("unknown output format {}", value),
+        }
     }
 }
