@@ -1,7 +1,7 @@
 workspace = { members = [
     "getinfo","httpie","myallocator","thumbor",
     "guessing_game", "rust_by_example", "rust_lang_book", "minigrep",
-    "rust-atomics-and-locks", "tokio-chat-client", "tokio-chat-server", "cli"] }
+    "rust-atomics-and-locks", "tokio-chat-client", "tokio-chat-server", "cli", "concurrency"] }
 [package]
 name = "rust-study"
 version = "0.1.0"
